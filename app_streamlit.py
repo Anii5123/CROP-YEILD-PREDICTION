@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 import os
+import subprocess  # to call train.py if models don't exist
 
 st.set_page_config(page_title="Crop Yield Prediction", layout="centered")
 
@@ -10,7 +11,7 @@ MODEL_DIR = "models"
 DATA_PATH = "yield_df.csv"
 
 st.title("🌾 Crop Yield Prediction")
-st.write("Enter features to predict yield (hg/ha). Models were trained on the Kaggle dataset.")  # noqa E501
+st.write("Enter features to predict yield (hg/ha). Models were trained on the Kaggle dataset.")   # noqa E501
 
 
 # Load dataset (for dropdown lists)
@@ -30,8 +31,20 @@ if 'Area' in df.columns and 'Item' in df.columns:
     area_list = sorted(df['Area'].dropna().unique().tolist())
     item_list = sorted(df['Item'].dropna().unique().tolist())
 else:
-    st.error("Dataset must contain 'Area' and 'Item' columns to populate dropdowns.")  # noqa E501
+    st.error("Dataset must contain 'Area' and 'Item' columns to populate dropdowns.")   # noqa E501
     st.stop()
+
+# Ensure models folder exists
+if not os.path.exists(MODEL_DIR) or not any(f.endswith('.pkl') for f in os.listdir(MODEL_DIR)):   # noqa E501
+    st.warning("Models not found. Training models now... This may take a few minutes.")   # noqa E501
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    # Call train.py
+    try:
+        subprocess.run(["python", "train.py"], check=True)
+        st.success("Models trained successfully!")
+    except subprocess.CalledProcessError as e:   # noqa E501
+        st.error("Error training models. Check train.py.")
+        st.stop()
 
 # available models (files present in models/)
 model_files = {os.path.splitext(f)[0]: os.path.join(MODEL_DIR, f)
@@ -45,9 +58,9 @@ model_choice = st.selectbox("Choose model", list(model_files.keys()))
 # Inputs
 col1, col2 = st.columns(2)
 with col1:
-    year = st.number_input("Year", min_value=1900, max_value=2100, value=int(df['Year'].median()))  # noqa E501
+    year = st.number_input("Year", min_value=1900, max_value=2100, value=int(df['Year'].median()))   # noqa E501
     rainfall = st.number_input("Average rainfall (mm/year)", value=float(df['average_rain_fall_mm_per_year'].median()))   # noqa E501
-    pesticides = st.number_input("Pesticides (tonnes)", value=float(df['pesticides_tonnes'].median()))  # noqa E501
+    pesticides = st.number_input("Pesticides (tonnes)", value=float(df['pesticides_tonnes'].median()))   # noqa E501
 with col2:
     avg_temp = st.number_input("Average temperature (°C)", value=float(df['avg_temp'].median()))   # noqa E501
     area = st.selectbox("Area (country/state)", area_list)
@@ -75,15 +88,15 @@ if st.button("Predict"):
 
     # Farmer-friendly explanation 🌾
     st.subheader("🌾 Farmer Friendly Output")
-    st.write(f"👉 With your inputs, the expected yield is about **{pred_kg:,.0f} Kg per hectare** (~ **{pred_q:,.1f} Quintals per hectare**).")  # noqa E501
+    st.write(f"👉 With your inputs, the expected yield is about **{pred_kg:,.0f} Kg per hectare** (~ **{pred_q:,.1f} Quintals per hectare**).")   # noqa E501
 
-    # Yield quality indicator (simple thresholds, adjust as per data)
+    # Yield quality indicator
     if pred_q > 30:
         st.success("🟢 This is a Good Yield!")
     elif pred_q > 15:
         st.warning("🟡 This is an Average Yield.")
     else:
-        st.error("🔴 This is a Low Yield. Consider improving irrigation, fertilizer, or crop choice.")  # noqa E501
+        st.error("🔴 This is a Low Yield. Consider improving irrigation, fertilizer, or crop choice.")   # noqa E501
 
     # Technical details for experts
     st.subheader("🧑‍💻 Technical Output")
