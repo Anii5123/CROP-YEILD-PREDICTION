@@ -25,3 +25,77 @@ python train.py
 
 step 6:
 streamlit run app_streamlit.py
+
+
+Description:
+
+Farmers want to know how much crop they can expect under certain conditions (rainfall, temperature, pesticides, etc.).
+The project uses Machine Learning (ML) to predict yield per hectare based on historical data.
+
+Inputs & Outputs
+Inputs (what user enters in Streamlit app):
+
+Year
+
+Rainfall (mm)
+
+Temperature (°C)
+
+Pesticide use (tonnes)
+
+Country (Area)
+
+Crop (Item)
+
+Outputs:
+
+Farmer View:
+
+Yield in Kg/hectare & Quintals/hectare
+
+Traffic-light indicator (Good / Average / Low yield)
+
+Technical View:
+
+Yield in hg/ha (raw prediction)
+
+Model metrics: MAE, RMSE, R²
+
+4. Why Machine Learning Algorithms?
+
+We can’t write a simple formula like Yield = Rainfall * Temp * Pesticides because relationships are non-linear & complex.
+That’s why we test different ML models:
+
+a) Linear Regression
+
+Simple, easy to interpret.
+
+Assumes straight-line relationship between inputs & yield.
+
+Good baseline model.
+
+b) Random Forest 🌳
+
+Collection of many decision trees (“forest”).
+
+Works well with non-linear, messy data.
+
+More accurate than Linear Regression but less interpretable.
+
+c) Decision Tree
+
+Easy to explain (“If rainfall > 500 → yield high, else low”).
+
+Not very accurate alone, but useful for interpretability.
+
+d) Gradient Boosting
+
+Builds trees step by step, correcting errors.
+
+Often most accurate (but slower).
+
+👉 That’s why we use all 4 models:
+
+Farmers get robust results (Random Forest / Gradient Boosting)
+
+Experts can compare with simple Linear Regression
