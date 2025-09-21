@@ -21,7 +21,7 @@ step 4:
 pip install -r "requirements.txt"
 
 step 5:
-python train.py\
+python train.py
 
 step 6:
 streamlit run app_streamlit.py
